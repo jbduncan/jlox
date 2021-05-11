@@ -1,0 +1,174 @@
+print "one";
+print true;
+print 2 + 1;
+
+var p = "Success";
+print p;
+
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+  var a = "outer a";
+  var b = "outer b";
+  {
+    var a = "inner a";
+    print a;
+    print b;
+    print c;
+  }
+  print a;
+  print b;
+  print c;
+}
+print a;
+print b;
+print c;
+
+var d = 1;
+{
+  var e = d + 2;
+  print e;
+}
+
+{
+  var i = 0;
+  while (i < 10) {
+    print i;
+    i = i + 1;
+  }
+}
+
+var a = 0;
+var temp;
+
+for (var b = 1; a < 10000; b = temp + b) {
+  print a;
+  temp = a;
+  a = b;
+}
+
+fun fib(n) {
+  if (n <= 1) return n;
+  return fib(n - 2) + fib(n - 1);
+}
+
+for (var i = 0; i < 30; i = i + 1) {
+  print fib(i);
+}
+
+fun makeCounter() {
+  var i = 0;
+  fun count() {
+    i = i + 1;
+    print i;
+  }
+
+  return count;
+}
+
+var counter = makeCounter();
+counter();
+counter();
+
+fun scope(a) {
+  var b = "local";
+  print b;
+}
+scope("global");
+
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA();
+  var a = "block";
+  showA();
+}
+
+class Breakfast {
+  cook() {
+    print this;
+    print "Eggs a-fryin'!";
+  }
+
+  serve(firstPerson) {
+    print "Enjoy your breakfast, " + firstPerson + " and " + this.secondPerson + ".";
+  }
+}
+
+print Breakfast;
+
+var breakfast = Breakfast();
+print breakfast;
+
+breakfast.cook();
+
+var firstPerson = "Jack";
+breakfast.secondPerson = "Jill";
+breakfast.serve(firstPerson);
+
+class Thing {
+  getCallback() {
+    fun localFunction() {
+      print this;
+    }
+
+    return localFunction;
+  }
+}
+
+var callback = Thing().getCallback();
+callback();
+
+class Foo {
+  init() {
+    this.bar = "bar";
+    this.baz = "baz";
+  }
+
+  frobulate() {
+    return "We frobulate " + this.bar + " and " + this.baz + " together into a gluzz."; // Of course!
+  }
+}
+
+print Foo().frobulate();
+
+class Bar {
+  init() {
+    return;
+  }
+}
+
+var bar = Bar();
+print bar;
+print bar.init();
+
+class Doughnut {
+  cook() {
+    print "Fry until golden brown.";
+  }
+}
+
+class BostonCream < Doughnut {
+  cook() {
+    super.cook();
+    print "Pipe full of custard and coat with chocolate.";
+  }
+}
+
+BostonCream().cook();
+
+// --------------------
+
+fun fib(n) {
+  if (n < 2) return n;
+  return fib(n - 1) + fib(n - 2);
+}
+
+var before = clock();
+print fib(40);
+var after = clock();
+print after - before;
