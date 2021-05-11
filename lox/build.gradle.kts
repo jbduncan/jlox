@@ -46,6 +46,12 @@ tasks.test {
     }
 }
 
+tasks.withType<Jar> {
+    manifest {
+        attributes("Main-Class" to "com.craftinginterpreters.lox.Lox")
+    }
+}
+
 val generateAstTask = tasks.register<GenerateAstTask>("generateAst") {
     outputDirectory.set(file("$projectDir/build/generated/sources/ast/java/main/com/craftinginterpreters/lox"))
 }
