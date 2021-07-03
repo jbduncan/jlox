@@ -1,14 +1,14 @@
 # jlox
 
-My Java 11 implementation of Lox - a small programming language for scripting - from the
-book [Crafting Interpreters](https://www.craftinginterpreters.com/).
+This is my Java 11 implementation of Lox - a small programming language for scripting -
+from the book [Crafting Interpreters](https://www.craftinginterpreters.com/).
 
 One big difference between the
 [reference implementation](https://github.com/munificent/craftinginterpreters) and this
 one is, whereas the reference implementation generates the `Expr` and `Stmt` classes
 by concatenating strings together, this implementation uses
 [JavaPoet](https://github.com/square/javapoet), a Java library for generating Java
-Java source files in a more type-safe way.
+source files in a more type-safe way.
 
 # Build
 
