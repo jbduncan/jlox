@@ -59,7 +59,7 @@ final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     Map<String, Boolean> innermostScope = scopes.peek();
     if (innermostScope.containsKey(name.lexeme)) {
-      Lox.error(name, "Already variable with this name in this scope.");
+      Lox.error(name, "Already a variable with this name in this scope.");
     }
 
     innermostScope.put(name.lexeme, false);
