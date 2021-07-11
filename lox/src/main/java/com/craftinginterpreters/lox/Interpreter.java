@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
+// TODO: Consider translating to use sealed classes and record patterns once Java 18 is out:
+//       https://nipafx.dev/java-visitor-pattern-pointless/
 final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
   final Environment globals = new Environment();
