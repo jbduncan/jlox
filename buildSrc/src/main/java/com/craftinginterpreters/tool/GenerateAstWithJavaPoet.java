@@ -2,17 +2,14 @@ package com.craftinginterpreters.tool;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.writeString;
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toUnmodifiableList;
 import static javax.lang.model.element.Modifier.ABSTRACT;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
 import com.google.common.base.Ascii;
-import com.google.googlejavaformat.java.Formatter;
-import com.google.googlejavaformat.java.FormatterException;
+import com.google.common.collect.ImmutableList;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -59,7 +56,7 @@ final class GenerateAstWithJavaPoet {
   private static final ClassName OBJECT = ClassName.get(Object.class);
   private static final ClassName NULLABLE_OBJECT = OBJECT.annotated(List.of(NULLABLE_ANNOTATION));
 
-  public static void main(String... args) throws IOException, FormatterException {
+  public static void main(String... args) throws IOException {
     if (args.length != 1) {
       System.err.println("Usage: GenerateAstWithJavaPoet <output directory>");
       System.exit(64);
@@ -161,18 +158,18 @@ final class GenerateAstWithJavaPoet {
   }
 
   private static void defineAst(ClassName astBaseName, String outputDir, List<AstSubType> types)
-      throws IOException, FormatterException {
+      throws IOException {
 
-    var typeBuilder =
+    var typeSpecBuilder =
         TypeSpec.classBuilder(astBaseName)
             .addModifiers(ABSTRACT)
             .addAnnotation(GENERATED_ANNOTATION);
 
-    TypeSpec visitorInterface = defineVisitor(astBaseName, types);
-    typeBuilder.addType(visitorInterface);
+    var visitorInterfaceTypeSpec = defineVisitor(astBaseName, types);
+    typeSpecBuilder.addType(visitorInterfaceTypeSpec);
 
     // The base accept() method.
-    MethodSpec.Builder acceptMethodBuilder =
+    var acceptMethodSpecBuilder =
         MethodSpec.methodBuilder("accept")
             .addTypeVariable(TypeVariableName.get("R"))
             .returns(TypeVariableName.get("R"))
@@ -182,24 +179,22 @@ final class GenerateAstWithJavaPoet {
                             ClassName.get(
                                 astBaseName.packageName(),
                                 astBaseName.simpleName(),
-                                visitorInterface.name),
+                                visitorInterfaceTypeSpec.name),
                             TypeVariableName.get("R")),
                         "visitor")
                     .build());
-    typeBuilder.addMethod(acceptMethodBuilder.addModifiers(ABSTRACT).build());
+    typeSpecBuilder.addMethod(acceptMethodSpecBuilder.addModifiers(ABSTRACT).build());
 
     // The AST classes.
     for (var type : types) {
-      typeBuilder.addType(
-          defineSubType(astBaseName.packageName(), typeBuilder.build(), type.subType, type.fields));
+      typeSpecBuilder.addType(
+          defineSubType(astBaseName.packageName(), typeSpecBuilder.build(), type.subType, type.fields));
     }
 
-    String astSourceCode =
-        JavaFile.builder(astBaseName.packageName(), typeBuilder.build()).build().toString();
+    var astSourceCode =
+        JavaFile.builder(astBaseName.packageName(), typeSpecBuilder.build()).build().toString();
     writeString(
-        Path.of(outputDir, astBaseName.simpleName() + ".java"),
-        new Formatter().formatSourceAndFixImports(astSourceCode),
-        UTF_8);
+        Path.of(outputDir, astBaseName.simpleName() + ".java"), astSourceCode, UTF_8);
   }
 
   private static TypeSpec defineVisitor(ClassName astBaseName, List<AstSubType> types) {
@@ -227,18 +222,18 @@ final class GenerateAstWithJavaPoet {
     var fieldSpecs =
         fields.stream()
             .map(field -> FieldSpec.builder(field.typeName, field.name, FINAL).build())
-            .collect(toUnmodifiableList());
+            .toList();
 
     var parameterSpecs =
         fields.stream()
             .map(f -> ParameterSpec.builder(f.typeName, f.name).build())
-            .collect(toUnmodifiableList());
+            .toList();
 
     var constructorBuilder = MethodSpec.constructorBuilder().addParameters(parameterSpecs);
 
     // Store parameters in fields.
     for (var field : fields) {
-      if (field.nullable) {
+      if (field.isNullable()) {
         constructorBuilder.addStatement("this.$N = $N", field.name, field.name);
       } else {
         constructorBuilder.addStatement(
@@ -276,25 +271,24 @@ final class GenerateAstWithJavaPoet {
         .build();
   }
 
-  private static class Field {
-    final TypeName typeName;
-    final String name;
-    final boolean nullable;
+  private record Field(TypeName typeName, String name) {
+    Field {
+      requireNonNull(typeName);
+      requireNonNull(name);
+    }
 
-    Field(TypeName typeName, String name) {
-      this.typeName = requireNonNull(typeName);
-      this.name = requireNonNull(name);
-      this.nullable = isNullable(typeName);
+    boolean isNullable() {
+      return GenerateAstWithJavaPoet.isNullable(typeName);
     }
   }
 
-  private static class AstSubType {
-    final String subType;
-    final List<Field> fields;
+  private record AstSubType(String subType, ImmutableList<Field> fields) {
+    AstSubType {
+      requireNonNull(subType);
+    }
 
-    public AstSubType(String subType, Field... fields) {
-      this.subType = requireNonNull(subType);
-      this.fields = List.copyOf(asList(requireNonNull(fields)));
+    AstSubType(String subType, Field... fields) {
+      this(subType, ImmutableList.copyOf(fields));
     }
   }
 

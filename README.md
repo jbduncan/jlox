@@ -1,6 +1,6 @@
 # jlox
 
-This is my Java 11 implementation of Lox - a small programming language for scripting -
+This is my Java 17 implementation of Lox - a small programming language for scripting -
 from the book [Crafting Interpreters](https://www.craftinginterpreters.com/).
 
 One big difference between the
@@ -12,24 +12,29 @@ source files in a more type-safe way.
 
 # Prerequisites
 
-1. Install a distribution of Java 11. One way to do so is:
+1. Install a distribution of Java 17. One way to do this is:
    1. Install [asdf-vm](https://asdf-vm.com/).
    2. Run `asdf plugin add java`.
-   3. Run `asdf install java adoptopenjdk-11.0.11+9`, or whatever the latest version of "adoptopenjdk-11" is according to `asdf list-all java`.
-   4. Now, when you "cd" into this directory, running `java` will use the asdf-managed version.
-2. Setup your favourite IDE or text editor to use this distribution of Java 11.
+   3. Now, when you "cd" into this directory and run `asdf install`, running `java` will use the asdf-managed version specified in `.tool-versions`.
+2. Setup your favourite IDE or text editor to use this distribution of Java 17.
 
 # Build the executable
 
-`./gradlew build`
+```
+./gradlew build
+```
 
 # Run the executable as a REPL
 
-`java -jar lox/build/libs/lox-0.1.0-SNAPSHOT.jar`
+```
+java -jar lox/build/libs/lox-0.1.0-SNAPSHOT.jar
+```
 
 Alternatively, run the Java file `com.craftinginterpreters.lox.Lox` in your IDE of
 choice.
 
 # Run the executable with a Lox script
 
-`java -jar lox/build/libs/lox-0.1.0-SNAPSHOT.jar <path-to-lox-program>`
+```
+java -jar lox/build/libs/lox-0.1.0-SNAPSHOT.jar <path-to-lox-program>
+```

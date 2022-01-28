@@ -44,8 +44,7 @@ public final class Lox {
   private static void runPrompt() throws IOException {
     // These resources are not wrapped in try-with-resources because
     // System.in should never be closed by hand.
-    var input = new InputStreamReader(System.in, defaultCharset());
-    var reader = new BufferedReader(input);
+    var reader = new BufferedReader(new InputStreamReader(System.in, defaultCharset()));
     while (true) {
       System.out.print("> ");
       String line = reader.readLine();

@@ -1,11 +1,3 @@
-import com.google.googlejavaformat.java.Formatter
-
-buildscript {
-    dependencies {
-        classpath("com.google.googlejavaformat:google-java-format:1.10.0")
-    }
-}
-
 plugins {
     `kotlin-dsl`
 }
@@ -16,32 +8,17 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    api("com.google.googlejavaformat:google-java-format:1.9")
     api("com.squareup:javapoet:1.13.0")
-}
-
-val format = tasks.register("format") {
-    val javaFiles = fileTree("$projectDir") {
-        include("src/**/*.java")
-    }.sorted()
-
-    // Usually, one would consider javaFiles to be both the inputs and outputs of this task.
-    // However, we purposefully declare them only as the outputs here so that Gradle doesn't
-    // mistakenly think that this task is always UP-TO-DATE.
-    outputs.files(javaFiles)
-
-    doLast {
-        for (file in javaFiles) {
-            file.writeText(Formatter().formatSourceAndFixImports(file.readText()))
-        }
-    }
-}
-
-tasks.withType<AbstractCompile> {
-    dependsOn(format)
+    implementation("com.google.guava:guava:30.1-jre")
 }

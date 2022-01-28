@@ -16,7 +16,7 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
@@ -35,8 +35,8 @@ idea {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:30.1-jre")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    implementation("com.google.guava:guava:31.0.1-jre")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
 
 tasks.test {
@@ -63,6 +63,6 @@ tasks.named("compileJava") {
 spotless {
     java {
         target("src/**/*.java")
-        googleJavaFormat("1.10.0")
+        googleJavaFormat("1.13.0")
     }
 }
