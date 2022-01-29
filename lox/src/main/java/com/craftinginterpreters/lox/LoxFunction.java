@@ -2,7 +2,6 @@ package com.craftinginterpreters.lox;
 
 import static java.util.Objects.requireNonNull;
 
-import com.craftinginterpreters.lox.Stmt.Function;
 import java.util.List;
 
 final class LoxFunction implements LoxCallable {
@@ -10,7 +9,7 @@ final class LoxFunction implements LoxCallable {
   private final Environment closure;
   private final boolean initializer;
 
-  LoxFunction(Function declaration, Environment closure, boolean initializer) {
+  LoxFunction(Stmt.Function declaration, Environment closure, boolean initializer) {
     this.declaration = requireNonNull(declaration, "declaration");
     this.closure = requireNonNull(closure, "closure");
     this.initializer = initializer;
@@ -32,7 +31,7 @@ final class LoxFunction implements LoxCallable {
   public Object call(Interpreter interpreter, List<Object> arguments) {
     var environment = new Environment(closure);
     for (int i = 0; i < declaration.params.size(); i++) {
-      environment.define(declaration.params.get(i).lexeme, arguments.get(i));
+      environment.define(declaration.params.get(i).lexeme(), arguments.get(i));
     }
 
     try {
@@ -70,6 +69,6 @@ final class LoxFunction implements LoxCallable {
 
   @Override
   public String toString() {
-    return "<fn " + declaration.name.lexeme + ">";
+    return "<fn " + declaration.name.lexeme() + ">";
   }
 }

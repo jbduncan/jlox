@@ -4,17 +4,11 @@ import static java.util.Objects.requireNonNull;
 
 import javax.annotation.Nullable;
 
-final class Token {
-  final TokenType type;
-  final String lexeme;
-  final @Nullable Object literal;
-  final int line;
+record Token(TokenType type, String lexeme, @Nullable Object literal, int line) {
 
-  Token(TokenType type, String lexeme, Object literal, int line) {
-    this.type = requireNonNull(type);
-    this.lexeme = requireNonNull(lexeme);
-    this.literal = literal;
-    this.line = line;
+  Token {
+    requireNonNull(type);
+    requireNonNull(lexeme);
   }
 
   public String toString() {

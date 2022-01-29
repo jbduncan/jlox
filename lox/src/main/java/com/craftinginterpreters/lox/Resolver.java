@@ -10,6 +10,7 @@ import java.util.Stack;
 final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   private final Interpreter interpreter;
+  // TODO: Replace this stack with a custom implementation.
   private final Stack<Map<String, Boolean>> scopes = new Stack<>();
   private FunctionType currentFunction = FunctionType.NONE;
 
@@ -58,11 +59,11 @@ final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     Map<String, Boolean> innermostScope = scopes.peek();
-    if (innermostScope.containsKey(name.lexeme)) {
+    if (innermostScope.containsKey(name.lexeme())) {
       Lox.error(name, "Already a variable with this name in this scope.");
     }
 
-    innermostScope.put(name.lexeme, false);
+    innermostScope.put(name.lexeme(), false);
   }
 
   private void define(Token name) {
@@ -71,12 +72,12 @@ final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     Map<String, Boolean> innermostScope = scopes.peek();
-    innermostScope.put(name.lexeme, true);
+    innermostScope.put(name.lexeme(), true);
   }
 
   private void resolveLocal(Expr expr, Token name) {
     for (int i = scopes.size() - 1; i >= 0; i--) {
-      if (scopes.get(i).containsKey(name.lexeme)) {
+      if (scopes.get(i).containsKey(name.lexeme())) {
         interpreter.resolve(expr, scopes.size() - 1 - i);
         return;
       }
@@ -170,7 +171,7 @@ final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   public Void visitVariableExpr(Expr.Variable expr) {
     if (!scopes.isEmpty()) {
       Map<String, Boolean> innermostScope = scopes.peek();
-      if (innermostScope.get(expr.name.lexeme) == Boolean.FALSE) {
+      if (innermostScope.get(expr.name.lexeme()) == Boolean.FALSE) {
         Lox.error(expr.name, "Can't read local variable in its own initializer.");
       }
     }
@@ -195,7 +196,7 @@ final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     declare(stmt.name);
     define(stmt.name);
 
-    if (stmt.superclass != null && stmt.name.lexeme.equals(stmt.superclass.name.lexeme)) {
+    if (stmt.superclass != null && stmt.name.lexeme().equals(stmt.superclass.name.lexeme())) {
       Lox.error(stmt.superclass.name, "A class can't inherit from itself.");
     }
 
@@ -216,7 +217,7 @@ final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     for (Stmt.Function method : stmt.methods) {
       var declaration =
-          method.name.lexeme.equals("init") ? FunctionType.INITIALIZER : FunctionType.METHOD;
+          method.name.lexeme().equals("init") ? FunctionType.INITIALIZER : FunctionType.METHOD;
 
       resolveFunction(method, declaration);
     }

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
-// TODO: Consider translating to use sealed classes and record patterns once Java 18 is out:
+// TODO: Consider translating to use record patterns once Java 18 is out:
 //       https://nipafx.dev/java-visitor-pattern-pointless/
 final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
@@ -40,7 +40,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
   void interpret(List<Stmt> statements) {
     try {
-      for (Stmt statement : statements) {
+      for (var statement : statements) {
         execute(statement);
       }
     } catch (RuntimeError error) {
@@ -91,7 +91,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
     Object left = evaluate(expr.left);
     Object right = evaluate(expr.right);
 
-    switch (expr.operator.type) {
+    switch (expr.operator.type()) {
       case GREATER:
         checkNumberOperands(expr.operator, left, right);
         return (double) left > (double) right;
@@ -118,7 +118,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
           }
 
           if (left instanceof String && right instanceof String) {
-            return (String) left + (String) right;
+            return left + (String) right;
           }
 
           throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
@@ -144,11 +144,10 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
       arguments.add(evaluate(argument));
     }
 
-    if (!(callee instanceof LoxCallable)) {
+    if (!(callee instanceof LoxCallable function)) {
       throw new RuntimeError(expr.paren, "Can only call functions and classes.");
     }
 
-    LoxCallable function = (LoxCallable) callee;
     if (arguments.size() != function.arity()) {
       throw new RuntimeError(
           expr.paren,
@@ -161,8 +160,8 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
   @Override
   public Object visitGetExpr(Expr.Get expr) {
     Object object = evaluate(expr.object);
-    if (object instanceof LoxInstance) {
-      return ((LoxInstance) object).get(expr.name);
+    if (object instanceof LoxInstance instance) {
+      return instance.get(expr.name);
     }
 
     throw new RuntimeError(expr.name, "Only instances have properties.");
@@ -182,11 +181,11 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
   public Object visitLogicalExpr(Expr.Logical expr) {
     Object left = evaluate(expr.left);
 
-    if (expr.operator.type == TokenType.OR) {
+    if (expr.operator.type() == TokenType.OR) {
       if (isTruthy(left)) {
         return left;
       }
-    } else if (expr.operator.type == TokenType.AND) {
+    } else if (expr.operator.type() == TokenType.AND) {
       if (!isTruthy(left)) {
         return left;
       }
@@ -201,12 +200,12 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
   public Object visitSetExpr(Expr.Set expr) {
     Object object = evaluate(expr.object);
 
-    if (!(object instanceof LoxInstance)) {
+    if (!(object instanceof LoxInstance instance)) {
       throw new RuntimeError(expr.name, "Only instances have fields.");
     }
 
     Object value = evaluate(expr.value);
-    ((LoxInstance) object).set(expr.name, value);
+    instance.set(expr.name, value);
     return value;
   }
 
@@ -217,12 +216,13 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
     LoxInstance object = (LoxInstance) environment.getAt(distance - 1, "this");
 
-    Optional<LoxFunction> method = superclass.findMethod(expr.method.lexeme);
+    Optional<LoxFunction> method = superclass.findMethod(expr.method.lexeme());
     return method
         .map(m -> m.bind(object))
         .orElseThrow(
             () ->
-                new RuntimeError(expr.method, "Undefined property '" + expr.method.lexeme + "'."));
+                new RuntimeError(
+                    expr.method, "Undefined property '" + expr.method.lexeme() + "'."));
   }
 
   @Override
@@ -234,7 +234,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
   public Object visitUnaryExpr(Expr.Unary expr) {
     Object right = evaluate(expr.right);
 
-    switch (expr.operator.type) {
+    switch (expr.operator.type()) {
       case MINUS:
         checkNumberOperand(expr.operator, right);
         return -((double) right);
@@ -254,7 +254,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
   private Object lookUpVariable(Token name, Expr expr) {
     Integer distance = locals.get(expr);
     if (distance != null) {
-      return environment.getAt(distance, name.lexeme);
+      return environment.getAt(distance, name.lexeme());
     } else {
       return globals.get(name);
     }
@@ -314,7 +314,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
       }
     }
 
-    environment.define(stmt.name.lexeme, null);
+    environment.define(stmt.name.lexeme(), null);
 
     if (superclass != null) {
       environment = new Environment(environment);
@@ -323,11 +323,11 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
     var methods = new HashMap<String, LoxFunction>();
     for (Stmt.Function method : stmt.methods) {
-      var function = new LoxFunction(method, environment, method.name.lexeme.equals("init"));
-      methods.put(method.name.lexeme, function);
+      var function = new LoxFunction(method, environment, method.name.lexeme().equals("init"));
+      methods.put(method.name.lexeme(), function);
     }
 
-    LoxClass klass = new LoxClass(stmt.name.lexeme, (LoxClass) superclass, methods);
+    LoxClass klass = new LoxClass(stmt.name.lexeme(), (LoxClass) superclass, methods);
 
     if (superclass != null) {
       environment = requireNonNull(environment.enclosing);
@@ -342,7 +342,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
     try {
       this.environment = environment;
 
-      for (Stmt statement : statements) {
+      for (var statement : statements) {
         execute(statement);
       }
     } finally {
@@ -359,7 +359,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
   @Override
   public Object visitFunctionStmt(Stmt.Function stmt) {
     var function = new LoxFunction(stmt, environment, /* initializer = */ false);
-    environment.define(stmt.name.lexeme, function);
+    environment.define(stmt.name.lexeme(), function);
     return null;
   }
 
@@ -391,7 +391,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
   public Void visitVarStmt(Stmt.Var stmt) {
     Object value = (stmt.initializer != null) ? evaluate(stmt.initializer) : null;
 
-    environment.define(stmt.name.lexeme, value);
+    environment.define(stmt.name.lexeme(), value);
     return null;
   }
 

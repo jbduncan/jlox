@@ -14,7 +14,7 @@ final class AstPrinter implements Expr.Visitor<String> {
 
   @Override
   public String visitBinaryExpr(Expr.Binary expr) {
-    return parenthesize(expr.operator.lexeme, expr.left, expr.right);
+    return parenthesize(expr.operator.lexeme(), expr.left, expr.right);
   }
 
   @Override
@@ -59,7 +59,7 @@ final class AstPrinter implements Expr.Visitor<String> {
 
   @Override
   public String visitUnaryExpr(Expr.Unary expr) {
-    return parenthesize(expr.operator.lexeme, expr.right);
+    return parenthesize(expr.operator.lexeme(), expr.right);
   }
 
   @Override
@@ -68,7 +68,7 @@ final class AstPrinter implements Expr.Visitor<String> {
   }
 
   private String parenthesize(String name, Expr... exprs) {
-    StringJoiner joiner = new StringJoiner("", "(" + name, ")");
+    var joiner = new StringJoiner("", "(" + name, ")");
     for (Expr expr : exprs) {
       joiner.add(" ").add(expr.accept(this));
     }

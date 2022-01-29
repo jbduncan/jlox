@@ -328,11 +328,10 @@ final class Parser {
       Token equals = previous();
       Expr value = assignment();
 
-      if (expr instanceof Expr.Variable) {
-        Token name = ((Expr.Variable) expr).name;
+      if (expr instanceof Expr.Variable var) {
+        Token name = var.name;
         return new Expr.Assign(name, value);
-      } else if (expr instanceof Expr.Get) {
-        var get = (Expr.Get) expr;
+      } else if (expr instanceof Expr.Get get) {
         return new Expr.Set(get.object, get.name, value);
       }
 
@@ -447,7 +446,7 @@ final class Parser {
   }
 
   private Expr finishCall(Expr callee) {
-    List<Expr> arguments = new ArrayList<>();
+    var arguments = new ArrayList<Expr>();
     if (!check(RIGHT_PAREN)) {
       do {
         if (arguments.size() >= MAX_NUM_ARGS) {
@@ -479,7 +478,7 @@ final class Parser {
     }
 
     if (match(NUMBER, STRING)) {
-      return new Expr.Literal(previous().literal);
+      return new Expr.Literal(previous().literal());
     }
 
     if (match(SUPER)) {
@@ -528,7 +527,7 @@ final class Parser {
     if (isAtEnd()) {
       return false;
     }
-    return peek().type == type;
+    return peek().type() == type;
   }
 
   private Token advance() {
@@ -539,7 +538,7 @@ final class Parser {
   }
 
   private boolean isAtEnd() {
-    return peek().type == EOF;
+    return peek().type() == EOF;
   }
 
   private Token peek() {
@@ -559,11 +558,11 @@ final class Parser {
     advance();
 
     while (!isAtEnd()) {
-      if (previous().type == SEMICOLON) {
+      if (previous().type() == SEMICOLON) {
         return;
       }
 
-      switch (peek().type) {
+      switch (peek().type()) {
         case CLASS:
         case FUN:
         case VAR:

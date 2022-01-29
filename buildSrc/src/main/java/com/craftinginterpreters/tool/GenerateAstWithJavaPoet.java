@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import static javax.lang.model.element.Modifier.ABSTRACT;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.SEALED;
 import static javax.lang.model.element.Modifier.STATIC;
 
 import com.google.common.base.Ascii;
@@ -161,8 +162,8 @@ final class GenerateAstWithJavaPoet {
       throws IOException {
 
     var typeSpecBuilder =
-        TypeSpec.classBuilder(astBaseName)
-            .addModifiers(ABSTRACT)
+        TypeSpec.interfaceBuilder(astBaseName)
+            .addModifiers(SEALED)
             .addAnnotation(GENERATED_ANNOTATION);
 
     var visitorInterfaceTypeSpec = defineVisitor(astBaseName, types);
@@ -183,7 +184,7 @@ final class GenerateAstWithJavaPoet {
                             TypeVariableName.get("R")),
                         "visitor")
                     .build());
-    typeSpecBuilder.addMethod(acceptMethodSpecBuilder.addModifiers(ABSTRACT).build());
+    typeSpecBuilder.addMethod(acceptMethodSpecBuilder.addModifiers(PUBLIC, ABSTRACT).build());
 
     // The AST classes.
     for (var type : types) {
@@ -201,6 +202,7 @@ final class GenerateAstWithJavaPoet {
     var visitorInterface =
         TypeSpec.interfaceBuilder(ClassName.get(astBaseName.packageName(), "Visitor"))
             .addTypeVariable(TypeVariableName.get("R"))
+            .addModifiers(PUBLIC, STATIC)
             .addAnnotation(GENERATED_ANNOTATION);
 
     for (var type : types) {
@@ -250,6 +252,7 @@ final class GenerateAstWithJavaPoet {
         MethodSpec.methodBuilder("accept")
             .addAnnotation(Override.class)
             .addTypeVariable(TypeVariableName.get("R"))
+            .addModifiers(PUBLIC)
             .returns(TypeVariableName.get("R"))
             .addParameter(
                 ParameterSpec.builder(
@@ -261,9 +264,10 @@ final class GenerateAstWithJavaPoet {
             .addStatement("return visitor.$N(this)", "visit" + innerSubType + outerBaseType.name)
             .build();
 
+    // TODO: Generate as a record when https://github.com/square/javapoet/pull/840 is resolved.
     return TypeSpec.classBuilder(innerSubType)
-        .addModifiers(STATIC, FINAL)
-        .superclass(ClassName.get(packageName, outerBaseType.name))
+        .addModifiers(PUBLIC, STATIC, FINAL)
+        .addSuperinterface(ClassName.get(packageName, outerBaseType.name))
         .addFields(fieldSpecs)
         .addMethod(constructorBuilder.build())
         .addMethod(acceptMethod)
@@ -278,7 +282,11 @@ final class GenerateAstWithJavaPoet {
     }
 
     boolean isNullable() {
-      return GenerateAstWithJavaPoet.isNullable(typeName);
+      if (typeName instanceof ClassName className) {
+        return className.topLevelClassName().annotations.stream()
+            .anyMatch(a -> a.type.equals(NULLABLE));
+      }
+      return typeName.annotations.stream().anyMatch(a -> a.type.equals(NULLABLE));
     }
   }
 
@@ -290,13 +298,5 @@ final class GenerateAstWithJavaPoet {
     AstSubType(String subType, Field... fields) {
       this(subType, ImmutableList.copyOf(fields));
     }
-  }
-
-  private static boolean isNullable(TypeName typeName) {
-    if (typeName instanceof ClassName) {
-      return ((ClassName) typeName)
-          .topLevelClassName().annotations.stream().anyMatch(a -> a.type.equals(NULLABLE));
-    }
-    return typeName.annotations.stream().anyMatch(a -> a.type.equals(NULLABLE));
   }
 }
