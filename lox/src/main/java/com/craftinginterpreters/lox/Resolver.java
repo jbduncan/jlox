@@ -5,12 +5,10 @@ import static java.util.Objects.requireNonNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 final class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   private final Interpreter interpreter;
-  // TODO: Replace this stack with a custom implementation.
   private final Stack<Map<String, Boolean>> scopes = new Stack<>();
   private FunctionType currentFunction = FunctionType.NONE;
 

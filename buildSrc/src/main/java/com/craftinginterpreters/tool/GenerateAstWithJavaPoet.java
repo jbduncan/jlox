@@ -10,7 +10,6 @@ import static javax.lang.model.element.Modifier.SEALED;
 import static javax.lang.model.element.Modifier.STATIC;
 
 import com.google.common.base.Ascii;
-import com.google.common.collect.ImmutableList;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -23,6 +22,7 @@ import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
@@ -290,13 +290,13 @@ final class GenerateAstWithJavaPoet {
     }
   }
 
-  private record AstSubType(String subType, ImmutableList<Field> fields) {
+  private record AstSubType(String subType, List<Field> fields) {
     AstSubType {
       requireNonNull(subType);
     }
 
     AstSubType(String subType, Field... fields) {
-      this(subType, ImmutableList.copyOf(fields));
+      this(subType, List.copyOf(Arrays.asList(fields)));
     }
   }
 }
