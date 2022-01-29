@@ -21,4 +21,5 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 dependencies {
     api("com.squareup:javapoet:1.13.0")
     implementation("com.google.guava:guava:30.1-jre")
+    implementation("org.jetbrains:annotations:23.0.0")
 }

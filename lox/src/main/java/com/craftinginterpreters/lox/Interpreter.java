@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 // TODO: Consider translating to use record patterns once Java 18 is out:
 //       https://nipafx.dev/java-visitor-pattern-pointless/

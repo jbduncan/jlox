@@ -35,7 +35,7 @@ idea {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:31.0.1-jre")
+    implementation("org.jetbrains:annotations:23.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
 

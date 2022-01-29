@@ -2,7 +2,7 @@ package com.craftinginterpreters.lox;
 
 import static java.util.Objects.requireNonNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 record Token(TokenType type, String lexeme, @Nullable Object literal, int line) {
 
