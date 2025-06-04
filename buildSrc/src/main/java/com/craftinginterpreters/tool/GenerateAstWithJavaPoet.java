@@ -9,7 +9,6 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.SEALED;
 import static javax.lang.model.element.Modifier.STATIC;
 
-import com.google.common.base.Ascii;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -24,16 +23,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
-import org.jetbrains.annotations.Nullable;
 import javax.annotation.processing.Generated;
 
 final class GenerateAstWithJavaPoet {
 
   private static final String PACKAGE_NAME = "com.craftinginterpreters.lox";
-  private static final ClassName NULLABLE = ClassName.get(Nullable.class);
-  private static final AnnotationSpec NULLABLE_ANNOTATION =
-      AnnotationSpec.builder(ClassName.get(Nullable.class)).build();
+  private static final ClassName NULLABLE =
+      ClassName.get("org.jspecify.annotations", "Nullable");
+  private static final AnnotationSpec NULLABLE_ANNOTATION = AnnotationSpec.builder(NULLABLE).build();
   private static final AnnotationSpec GENERATED_ANNOTATION =
       AnnotationSpec.builder(Generated.class)
           .addMember("value", '"' + GenerateAstWithJavaPoet.class.getCanonicalName() + '"')
@@ -43,7 +42,7 @@ final class GenerateAstWithJavaPoet {
   private static final ClassName NULLABLE_EXPR = EXPR.annotated(List.of(NULLABLE_ANNOTATION));
   private static final ParameterizedTypeName EXPR_LIST =
       ParameterizedTypeName.get(ClassName.get(List.class), EXPR);
-  private static final ClassName NULLABLE_VARIABLE_EXPR = NULLABLE_EXPR.nestedClass("Variable");
+  private static final ClassName NULLABLE_VARIABLE_EXPR = EXPR.nestedClass("Variable").annotated(List.of(NULLABLE_ANNOTATION));
   private static final ClassName STMT = ClassName.get(PACKAGE_NAME, "Stmt");
   private static final ClassName NULLABLE_STMT = STMT.annotated(List.of(NULLABLE_ANNOTATION));
   private static final ParameterizedTypeName STMT_LIST =
@@ -212,7 +211,7 @@ final class GenerateAstWithJavaPoet {
               .returns(TypeVariableName.get("R"))
               .addParameter(
                   ClassName.get(astBaseName.packageName(), astBaseName.simpleName(), type.subType),
-                  Ascii.toLowerCase(astBaseName.simpleName()))
+                  astBaseName.simpleName().toLowerCase(Locale.ROOT))
               .build());
     }
 

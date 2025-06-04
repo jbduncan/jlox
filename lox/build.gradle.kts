@@ -4,7 +4,7 @@ plugins {
     java
     idea
 
-    id("com.diffplug.spotless") version "5.12.1"
+    id("com.diffplug.spotless") version "7.0.4"
 }
 
 group = "com.craftinginterpreters.lox"
@@ -16,27 +16,27 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 sourceSets {
     main {
         java {
-            srcDirs("$buildDir/generated/sources/ast/java/main")
+            srcDirs("${layout.buildDirectory.get()}/generated/sources/ast/java/main")
         }
     }
 }
 
 idea {
     module {
-        generatedSourceDirs.add(file("$buildDir/generated/sources/ast/java/main"))
+        generatedSourceDirs.add(file("${layout.buildDirectory.get()}/generated/sources/ast/java/main"))
     }
 }
 
 dependencies {
-    implementation("org.jetbrains:annotations:23.0.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation("com.google.guava:guava:33.4.8-jre")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.0")
 }
 
 tasks.test {
@@ -63,6 +63,6 @@ tasks.named("compileJava") {
 spotless {
     java {
         target("src/**/*.java")
-        googleJavaFormat("1.13.0")
+        googleJavaFormat("1.27.0")
     }
 }

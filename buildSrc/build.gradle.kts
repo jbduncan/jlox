@@ -8,18 +8,10 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "17"
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 dependencies {
     api("com.squareup:javapoet:1.13.0")
-    implementation("com.google.guava:guava:30.1-jre")
-    implementation("org.jetbrains:annotations:23.0.0")
 }

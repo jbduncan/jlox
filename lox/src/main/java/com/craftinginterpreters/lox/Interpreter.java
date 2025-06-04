@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 // TODO: Consider translating to use record patterns once Java 18 is out:
 //       https://nipafx.dev/java-visitor-pattern-pointless/
@@ -358,7 +358,7 @@ final class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
   @Override
   public Object visitFunctionStmt(Stmt.Function stmt) {
-    var function = new LoxFunction(stmt, environment, /* initializer = */ false);
+    var function = new LoxFunction(stmt, environment, /* initializer= */ false);
     environment.define(stmt.name.lexeme(), function);
     return null;
   }
